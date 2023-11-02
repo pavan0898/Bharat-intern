@@ -1,1 +1,52 @@
+class Question:
+    def _init_(self, text, answer):
+        self.text = text
+        self.answer = answer
 
+class Quiz:
+    def _init_(self):
+        self.questions = []
+        self.score = 0
+        self.question_index = 0
+
+    def add_question(self, question):
+        self.questions.append(question)
+
+    def display_question(self):
+        question = self.questions[self.question_index]
+        print(f"Question {self.question_index + 1}: {question.text}")
+
+    def check_answer(self, user_answer):
+        question = self.questions[self.question_index]
+        if user_answer.lower() == question.answer.lower():
+            self.score += 1
+            print("Correct!\n")
+        else:
+            print(f"Wrong. The correct answer is: {question.answer}\n")
+        self.question_index += 1
+
+    def run_quiz(self):
+        for question in self.questions:
+            self.display_question()
+            user_answer = input("Your answer: ")
+            self.check_answer(user_answer)
+        self.show_results()
+
+    def show_results(self):
+        total_questions = len(self.questions)
+        print(f"You got {self.score} out of {total_questions} questions correct.")
+
+if _name_ == "_main_":
+    # Create quiz questions
+    q1 = Question("What is the capital of France?", "Paris")
+    q2 = Question("Which planet is known as the Red Planet?", "Mars")
+    q3 = Question("What is the largest mammal in the world?", "Blue Whale")
+
+    # Create a quiz and add questions
+    quiz = Quiz()
+    quiz.add_question(q1)
+    quiz.add_question(q2)
+    quiz.add_question(q3)
+
+    # Run the quiz
+    quiz.run_quiz()
