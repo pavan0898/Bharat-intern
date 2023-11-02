@@ -1,74 +1,63 @@
-import 'package:flutter/material.dart';
+import random
+import sqlite3
 
-void main() {
-  runApp(QuizApp());
-}
+# Connect to the database
+conn = sqlite3.connect('quiz.db')
+cursor = conn.cursor()
 
-class QuizApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: QuizScreen(),
-    );
-  }
-}
+class Question:
+    def _init_(self, text, answer, language):
+        self.text = text
+        self.answer = answer
+        self.language = language
 
-class QuizScreen extends StatefulWidget {
-  @override
-  _QuizScreenState createState() => _QuizScreenState();
-}
+    def save_to_db(self):
+        cursor.execute("INSERT INTO questions (text, answer, language) VALUES (?, ?, ?)",
+                       (self.text, self.answer, self.language))
+        conn.commit()
 
-class _QuizScreenState extends State<QuizScreen> {
-  List<Question> questions = [
-    Question("Question 1", true),
-    Question("Question 2", false),
-    Question("Question 3", true),
-  ];
+class Quiz:
+    def _init_(self, questions):
+        self.questions = questions
+        self.score = 0
 
-  int currentQuestionIndex = 0;
+    def run_quiz(self):
+        random.shuffle(self.questions)
+        for question in self.questions:
+            print(question.text)
+            user_answer = input("Enter 'True' or 'False': ").strip().lower()
+            if (user_answer == 'true' and question.answer) or (user_answer == 'false' and not question.answer):
+                print("Correct!")
+                self.score += 1
+            else:
+                print("Incorrect.")
+        print(f"Quiz Finished! Your Score: {self.score}/{len(self.questions)}")
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Quiz App"),
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            Text(questions[currentQuestionIndex].questionText),
-            ElevatedButton(
-              onPressed: () {
-                // Check if the answer is correct and handle score
-                bool isCorrect = questions[currentQuestionIndex].answer;
-                // Update the UI with the next question
-                setState(() {
-                  currentQuestionIndex++;
-                });
-              },
-              child: Text("True"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Check if the answer is correct and handle score
-                bool isCorrect = !questions[currentQuestionIndex].answer;
-                // Update the UI with the next question
-                setState(() {
-                  currentQuestionIndex++;
-                });
-              },
-              child: Text("False"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+# Create tables for questions in the database
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS questions (
+    id INTEGER PRIMARY KEY,
+    text TEXT,
+    answer BOOLEAN,
+    language TEXT
+)
+''')
+conn.commit()
 
-class Question {
-  String questionText;
-  bool answer;
+# Sample questions
+questions = [
+    Question("Python is a programming language.", True, "en"),
+    Question("La terre est ronde.", True, "fr"),  # French translation
+    # Add more questions in different languages here
+]
 
-  Question(this.questionText, this.answer);
-}
+# Save sample questions to the database
+for question in questions:
+    question.save_to_db()
+
+# Initialize the quiz and run it
+quiz = Quiz(questions)
+quiz.run_quiz()
+
+# Close the database connection
+conn.close()
